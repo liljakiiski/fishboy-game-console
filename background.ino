@@ -1,0 +1,1 @@
+void paint_bg
