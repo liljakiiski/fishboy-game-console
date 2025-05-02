@@ -1,40 +1,38 @@
 #include <TFT_HX8357.h>
 
-// Color order is RGB 5+6+5 bits each
-#define BG TFT_CYAN
-
-// Big Fish variables
-#define BIG_FISH_W 50
-#define BIG_FISH_H 35
-#define BIG_FISH_COLOR TFT_RED
-int big_fish_x = 20;
-int big_fish_y = 20;
-
-// Baby Fish (mean guys) variables
-#define BABY_FISH_H 30
-#define BABY_FISH_W 50
-
-// Baby Fish struct
-struct BabyFish {
-  int x;
-  int y;
-  unsigned int color;
-  int speed;
-};
-
 TFT_HX8357 tft = TFT_HX8357();
 
-BabyFish baby_fish[10];
+int SCREEN_WIDTH = 480;
+int SCREEN_HEIGHT = 320;
+
+// Cursor
+struct Cursor {
+  int x; //center x
+  int y; //center y
+  int size;
+  unsigned int color;
+};
+
+struct Cursor cursor1;
 
 void setup(){
   tft.init();
-  setupJoystick();
+
+  setup_joystick();
+  
+  setup_cursor(&cursor1, 20, 500, 20, 0xFFFFFF);
+
+  paint_background();
+
   Serial.begin(9600);
-  //paint_bg();
 }
 
-void loop(){
-  //move_fish(false);
-  printJoystick();
+void loop(){s
+  print_joystick();
   delay(1000);
+  paint_cursor(&cursor1);
+}
+
+void paint_background(){
+  tft.fillScreen(0x000000);
 }
