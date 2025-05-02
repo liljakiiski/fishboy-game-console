@@ -1,32 +1,40 @@
 #include <TFT_HX8357.h>
 
-//Constants
-//unsigned int colour = red << 11; // Colour order is RGB 5+6+5 bits each
+// Color order is RGB 5+6+5 bits each
 #define BG TFT_CYAN
-#define FISH TFT_BLUE
-#define BAIT TFT_RED
 
-struct Being {
-  int width;
-  int height;
+// Big Fish variables
+#define BIG_FISH_W 50
+#define BIG_FISH_H 35
+#define BIG_FISH_COLOR TFT_RED
+int big_fish_x = 20;
+int big_fish_y = 20;
+
+// Baby Fish (mean guys) variables
+#define BABY_FISH_H 30
+#define BABY_FISH_W 50
+
+// Baby Fish struct
+struct BabyFish {
   int x;
   int y;
   unsigned int color;
+  int speed;
 };
 
 TFT_HX8357 tft = TFT_HX8357();
 
-Being fish;
+BabyFish baby_fish[10];
 
 void setup(){
-  fish = {100, 100, 20, 20, TFT_BLUE};
   tft.init();
+  setupJoystick();
   Serial.begin(9600);
-  Serial.println(fish.width);
-  paint_bg();
-  draw_fish();
+  //paint_bg();
 }
 
 void loop(){
-
+  //move_fish(false);
+  printJoystick();
+  delay(1000);
 }

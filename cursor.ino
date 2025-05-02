@@ -1,0 +1,1 @@
+int curser_x = 0
