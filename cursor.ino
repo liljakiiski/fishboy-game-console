@@ -29,31 +29,39 @@ void move_cursor(struct Cursor* c, int shift_x, int shift_y){
   int new_y = c->y;
   prev_x = c->x;
   prev_y = c->y;
+  bool ok = true; //okay to move cursor actually
 
   //x-bound SCREEN_HEIGHT
   if(c->x + c->size + shift_x > (SCREEN_HEIGHT - buffer)){
     new_x = SCREEN_HEIGHT - buffer - c->size;
-  
+    ok = false;
+
   //x-bound 0
   } else if(c->x + shift_x < buffer){
     new_x = buffer;
+    ok = false;
+  
+  //x is okay
+  } else {
+    prev_x = c->x;
+    new_x = prev_x + shift_x;
+  } 
   
   //y-bound SCREEN_WIDTH
-  } else if(c->y + c->size + shift_y > (SCREEN_WIDTH - buffer)){
-    new_y = SCREEN_HEIGHT - buffer - c->size;
-  
+  if(c->y + c->size + shift_y > (SCREEN_WIDTH - buffer)){
+    new_y = SCREEN_WIDTH - buffer - c->size;
+    ok = false;
+
   //y-bound 0
   } else if(c->y + shift_y < buffer){
     new_y = buffer;
-
-  //inside bounds
+    ok = false;
+  
+  //y is okay
   } else {
-    prev_x = c->x;
     prev_y = c->y;
-
-    new_x = prev_x + shift_x;
     new_y = prev_y + shift_y;
-  }
+  } 
 
   c->x = new_x;
   c->y = new_y;

@@ -16,14 +16,14 @@ struct Cursor {
 };
 
 struct Cursor cursor1;
-double max_cursor_speed = 15;
+double max_cursor_speed = 20;
 
 void setup(){
   tft.init();
 
   setup_joystick();
   
-  setup_cursor(&cursor1, 5, 5, 20, 0xFFFFFF);
+  setup_cursor(&cursor1, 5, 5, 10, 0xFFFFFF);
 
   print_joystick();
   paint_background();
