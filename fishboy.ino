@@ -5,6 +5,8 @@ TFT_HX8357 tft = TFT_HX8357();
 int SCREEN_WIDTH = 480;
 int SCREEN_HEIGHT = 320;
 
+#define background_color 0x000000
+
 // Cursor
 struct Cursor {
   int x; //center x
@@ -14,25 +16,33 @@ struct Cursor {
 };
 
 struct Cursor cursor1;
+double max_cursor_speed = 15;
 
 void setup(){
   tft.init();
 
   setup_joystick();
   
-  setup_cursor(&cursor1, 20, 500, 20, 0xFFFFFF);
+  setup_cursor(&cursor1, 5, 5, 20, 0xFFFFFF);
 
+  print_joystick();
   paint_background();
 
   Serial.begin(9600);
 }
 
-void loop(){s
-  print_joystick();
-  delay(1000);
+void loop(){
+  move_cursor(&cursor1, joy_to_screen_x()*max_cursor_speed, joy_to_screen_y()*max_cursor_speed);
+  Serial.println("");
+  Serial.println(joy_to_screen_x()*max_cursor_speed);
+  Serial.println(joy_to_screen_y()*max_cursor_speed);
+  Serial.println(cursor1.x);
+  Serial.println(cursor1.y);
+  Serial.println("");
   paint_cursor(&cursor1);
+  delay(50);
 }
 
 void paint_background(){
-  tft.fillScreen(0x000000);
+  tft.fillScreen(background_color);
 }
