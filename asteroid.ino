@@ -1,6 +1,8 @@
 //GENERAL------------------------------------>
 #define ASTEROID_BG TFT_BLACK
 
+bool asteroid_game_over = false;
+
 struct Moving_Object {
   double angle;
   uint16_t color;
@@ -38,7 +40,17 @@ double joystick_to_angle(double joystick_x){
 
 double setup_asteroid_game(){
   setup_bullets();   
-  setup_asteroids(); 
+  setup_asteroids();
+}
+
+/* Tells whether or not too circles collided
+*/
+bool collided(int x1, int y1, int r1, int x2, int y2, int r2){
+  int dx = x2 - x1;
+  int dy = y2 - y1;
+  int distance = sqrt(pow(dx, 2) + pow(dy, 2));
+  int radii_sum = r1 + r2;
+  return distance <= radii_sum;
 }
 
 //HANDLING ASTEROIDS------------------------>
@@ -72,14 +84,13 @@ void shoot_asteroid(){
       double dy = shooter_y2 - asteroids[i].y;
       asteroids[i].angle = atan2(dy, dx);
 
-      asteroids[i].radius = random(3, 10);
-      asteroids[i].speed = random(2, 4);
+      asteroids[i].radius = random(8, 20);
+      asteroids[i].speed = random(5, 10);
       asteroids[i].active = true;
       break;
     }
   }
 }
-
 
 /* Handle asteroids every loop iteration
 */
@@ -93,8 +104,25 @@ void handle_asteroids(){
       asteroids[i].x += cos(asteroids[i].angle) * asteroids[i].speed;
       asteroids[i].y += sin(asteroids[i].angle) * asteroids[i].speed;
 
-      //asteroids[i].x = new_x;
-      //asteroids[i].y = new_y;
+      //Check collisions - shooter
+      if(collided(asteroids[i].x, asteroids[i].y, asteroids[i].radius, shooter_x1, shooter_y1, shooter_len)){
+        Serial.println("collided shooter");
+        asteroid_game_over = true;
+        break;        
+      }
+
+      //Check collisions - bullets
+      for(int x = 0; x < BULLET_CAPACITY; x++){
+        //If bullet is active & the two collided
+        if(bullets[x].active && collided(asteroids[i].x, asteroids[i].y, asteroids[i].radius, bullets[x].x, bullets[x].y, bullets[x].radius)){
+          tft.drawCircle(asteroids[i].prev_x, asteroids[i].prev_y, asteroids[i].radius, ASTEROID_BG);
+          tft.drawCircle(bullets[x].prev_x, bullets[x].prev_y, BULLET_RADIUS, ASTEROID_BG);
+          asteroids[i].active = false;
+          bullets[x].active = false;          
+          Serial.println("collided bullet??");
+          break;
+        }
+      }
     }
   }
 }
