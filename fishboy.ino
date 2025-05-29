@@ -25,7 +25,6 @@ void setup(){
   
   setup_cursor(&cursor1, 5, 5, 10, 0xFFFFFF);
 
-  print_joystick();
   paint_background();
 
   Serial.begin(9600);
@@ -33,13 +32,13 @@ void setup(){
 
 void loop(){
   move_cursor(&cursor1, joy_to_screen_x()*max_cursor_speed, joy_to_screen_y()*max_cursor_speed);
-  Serial.println("");
-  Serial.println(joy_to_screen_x()*max_cursor_speed);
-  Serial.println(joy_to_screen_y()*max_cursor_speed);
-  Serial.println(cursor1.x);
-  Serial.println(cursor1.y);
-  Serial.println("");
   paint_cursor(&cursor1);
+
+  Serial.println(get_joy_x());
+  update_shooter(get_joy_x());
+  draw_shooter();
+
+  //Serial.println(digitalRead(10));
   delay(50);
 }
 

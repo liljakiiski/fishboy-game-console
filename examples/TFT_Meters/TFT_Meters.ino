@@ -71,7 +71,7 @@ void loop() {
     //unsigned long t = millis(); 
     plotPointer(); // It takes aout 3.5ms to plot each gauge for a 1 pixel move, 21ms for 6 gauges
      
-    plotNeedle(value[0], 0); // It takes between 2 and 12ms to replot the needle with zero delay
+    plotNeedle(value[0], 10); // It takes between 2 and 12ms to replot the needle with zero delay
     //Serial.println(millis()-t); // Print time taken for meter update
   }
 }
@@ -180,7 +180,7 @@ void plotNeedle(int value, byte ms_delay)
 {
   tft.setTextColor(TFT_BLACK, TFT_WHITE);
   char buf[8]; dtostrf(value, 4, 0, buf);
-  tft.drawRightString(buf, 40, 119 - 20, 2);
+  //tft.drawRightString(buf, 40, 119 - 20, 2);
 
   if (value < -10) value = -10; // Limit value to emulate needle end stops
   if (value > 110) value = 110;
