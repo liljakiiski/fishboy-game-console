@@ -16,7 +16,7 @@ void setup_cursor(struct Cursor* cursor, int x, int y, int size, unsigned int co
 }
 
 void paint_cursor(struct Cursor* c){
-  tft.drawRect(prev_x, prev_y, c->size, c->size, background_color);
+  tft.drawRect(prev_x, prev_y, c->size, c->size, BASE_BG);
   tft.drawRect(c->x, c->y, c->size, c->size, c->color);
 }
 

@@ -1,22 +1,40 @@
-#define ASTEROID_BACKGROUND TFT_BLACK
+//GENERAL------------------------------------>
+#define ASTEROID_BG TFT_BLACK
 
+struct Moving_Object {
+  double angle;
+  uint16_t color;
+  double prev_x;
+  double prev_y;
+  double x;
+  double y;
+  double speed;
+  bool active;
+};
+
+//SHOOTER SETUP------------------------------>
 int shooter_len = 50; //length of shooter
-
-int shooter_x1 = 320/2; //base x
+int shooter_x1 = tft.width()/2; //base x
 int shooter_y1 = 0; //base y
-int shooter_x2 = 320/2; //moving x
+int shooter_x2 = shooter_x1; //moving x
 int shooter_y2 = shooter_y1 + shooter_len;
-
 int shooter_x2_prev = shooter_x2;
 int shooter_y2_prev = shooter_y2;
 
-float ltx = 0;    // Saved x coord of bottom of needle
-uint16_t osx = 120, osy = 120; // Saved x & y coords
+//ASTEROID SETUP---------------------------->
+Moving_Object asteroids[10];
+int asteroid_count = 0;
+
+//BULLET SETUP------------------------------>
+const int BULLET_CAPACITY = 10;
+const int BULLET_SPEED = 5;
+const int BULLET_RADIUS = 3;
+Moving_Object bullets[BULLET_CAPACITY];
 
 /* Update shooter based on joystick input
 */
 void update_shooter(double joystick_x){
-  double angle = acos(joystick_x);
+  double angle = joystick_to_angle(joystick_x);
 
   shooter_x2_prev = shooter_x2;
   shooter_y2_prev = shooter_y2;
@@ -25,11 +43,115 @@ void update_shooter(double joystick_x){
   shooter_y2 = shooter_y1 + sin(angle)*shooter_len;
 }
 
+double joystick_to_angle(double joystick_x){
+  return acos(joystick_x);
+}
+
+double setup_asteroid_game(){
+  setup_bullets();    
+}
+
+//HANDLING BULLETS-------------------------->
+void setup_bullets(){
+  for (int i = 0; i < BULLET_CAPACITY; i++) {
+    bullets[i].angle = 0;
+    bullets[i].prev_x = 0;
+    bullets[i].prev_y = 0;
+    bullets[i].x = 0;
+    bullets[i].y = 0;
+    bullets[i].speed = 0;
+    bullets[i].active = false;
+    bullets[i].color = TFT_WHITE;
+  }
+}
+
+int get_bullets_count(){
+  int count = 0;
+  for(int i = 0; i < BULLET_CAPACITY; i++){
+    if(bullets[i].active){
+      count++;
+    }
+  }
+  return count;
+}
+
+/* "Shoot" aka create a new bullet (if space)
+*/
+void shoot_bullet(double joystick_x){
+  for(int i = 0; i < BULLET_CAPACITY; i++){
+    if(!bullets[i].active){
+      double angle = joystick_to_angle(joystick_x);
+      bullets[i].angle = joystick_to_angle(joystick_x);
+      bullets[i].prev_x = shooter_x2;
+      bullets[i].prev_y = shooter_y2;
+      bullets[i].x = shooter_x2;
+      bullets[i].y = shooter_y2;
+      bullets[i].speed = BULLET_SPEED;
+      bullets[i].active = true;
+      break;
+    }
+  }
+}
+
+/*
+ Checks if a bullets possible new location is in screen 
+ Index i of bullets list
+*/
+bool bullet_location_in_screen(int new_x, int new_y){
+  return !(new_x - BULLET_RADIUS < 0 || new_x + BULLET_RADIUS > tft.width() ||
+      new_y - BULLET_RADIUS < 0 || new_y + BULLET_RADIUS > tft.height());
+}
+
+/* Handle bullets every loop iteration
+*/
+void handle_bullets(){
+  for(int i = 0; i < BULLET_CAPACITY; i++){
+    if(bullets[i].active){
+      bullets[i].prev_x = bullets[i].x;
+      bullets[i].prev_y = bullets[i].y;
+
+      int new_x = bullets[i].x + cos(bullets[i].angle)*bullets[i].speed;
+      int new_y = bullets[i].y + sin(bullets[i].angle)*bullets[i].speed;
+
+      //Bullet is in-screen
+      if (bullet_location_in_screen(new_x, new_y)){
+        bullets[i].x = new_x;
+        bullets[i].y = new_y;
+      
+      //Bullet is NOT in-screen
+      } else {
+        Serial.println("----");
+        Serial.println("NOT IN SCREEN");
+        Serial.println(tft.width());
+        Serial.println(tft.height());
+        Serial.println(bullets[i].x);
+        Serial.println(bullets[i].y);
+        Serial.println(new_x);
+        Serial.println(new_y);
+        Serial.println(i);
+        Serial.println("----");
+        bullets[i].active = false;
+        tft.drawCircle(bullets[i].prev_x, bullets[i].prev_y, BULLET_RADIUS, ASTEROID_BG);
+      }
+    }
+  }
+}
+
+void draw_bullets(){
+  for(int i = 0; i < BULLET_CAPACITY; i++){
+    if(bullets[i].active){
+      tft.drawCircle(bullets[i].prev_x, bullets[i].prev_y, BULLET_RADIUS, ASTEROID_BG);
+      tft.drawCircle(bullets[i].x, bullets[i].y, BULLET_RADIUS, bullets[i].color);
+    }
+  }
+}
+
+//HANDLING SHOOTER---------------------------->
 void draw_shooter(){
   int buffer = 3;
-  tft.drawCircle(shooter_x1-shooter_len-buffer, shooter_y1-buffer, 5, TFT_GREEN);
-  tft.fillRect(shooter_x1-shooter_len-buffer, shooter_y1-buffer, (shooter_len+buffer)*2, shooter_len+buffer*2, TFT_BLUE);
-  delay(10);
-  //tft.drawCircle(shooter_x1, shooter_y1, shooter_len+5, TFT_RED);
-  //tft.drawLine(shooter_x1, shooter_y1, shooter_x2, shooter_y2, TFT_WHITE);
+  if(shooter_x2 != shooter_x2_prev || shooter_y2 != shooter_y2_prev){
+    tft.drawLine(shooter_x1, shooter_y1, shooter_x2_prev, shooter_y2_prev, ASTEROID_BG);
+  }
+  tft.drawCircle(shooter_x1, shooter_y1, shooter_len+5, TFT_RED);
+  tft.drawLine(shooter_x1, shooter_y1, shooter_x2, shooter_y2, TFT_YELLOW);
 }

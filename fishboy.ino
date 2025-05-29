@@ -5,7 +5,7 @@ TFT_HX8357 tft = TFT_HX8357();
 int SCREEN_WIDTH = 480;
 int SCREEN_HEIGHT = 320;
 
-#define background_color 0x000000
+#define BASE_BG 0x000000
 
 // Cursor
 struct Cursor {
@@ -23,25 +23,37 @@ void setup(){
 
   setup_joystick();
   
-  setup_cursor(&cursor1, 5, 5, 10, 0xFFFFFF);
+  //setup_cursor(&cursor1, 5, 5, 10, 0xFFFFFF);
 
-  paint_background();
+  setup_asteroid_game();
+
+  paint_base_background();
 
   Serial.begin(9600);
 }
 
 void loop(){
-  move_cursor(&cursor1, joy_to_screen_x()*max_cursor_speed, joy_to_screen_y()*max_cursor_speed);
-  paint_cursor(&cursor1);
+  //move_cursor(&cursor1, joy_to_screen_x()*max_cursor_speed, joy_to_screen_y()*max_cursor_speed);
+  //paint_cursor(&cursor1);
 
-  Serial.println(get_joy_x());
+  //Serial.println(get_joy_x());
   update_shooter(get_joy_x());
   draw_shooter();
 
-  //Serial.println(digitalRead(10));
+  //button is pressed
+  if(!get_button_state()){
+    shoot_bullet(get_joy_x());
+    delay(100);
+  }
+
+  handle_bullets();
+  draw_bullets();
+
+  //Serial.println(get_bullets_count());
+  //Serial.println(get_button_state());
   delay(50);
 }
 
-void paint_background(){
-  tft.fillScreen(background_color);
+void paint_base_background(){
+  tft.fillScreen(BASE_BG);
 }
