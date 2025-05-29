@@ -8,6 +8,7 @@ struct Moving_Object {
   double prev_y;
   double x;
   double y;
+  double radius;
   double speed;
   bool active;
 };
@@ -22,8 +23,8 @@ int shooter_x2_prev = shooter_x2;
 int shooter_y2_prev = shooter_y2;
 
 //ASTEROID SETUP---------------------------->
-Moving_Object asteroids[10];
-int asteroid_count = 0;
+const int ASTEROID_CAPACITY = 10;
+Moving_Object asteroids[ASTEROID_CAPACITY];
 
 //BULLET SETUP------------------------------>
 const int BULLET_CAPACITY = 10;
@@ -31,37 +32,94 @@ const int BULLET_SPEED = 5;
 const int BULLET_RADIUS = 3;
 Moving_Object bullets[BULLET_CAPACITY];
 
-/* Update shooter based on joystick input
-*/
-void update_shooter(double joystick_x){
-  double angle = joystick_to_angle(joystick_x);
-
-  shooter_x2_prev = shooter_x2;
-  shooter_y2_prev = shooter_y2;
-
-  shooter_x2 = shooter_x1 + cos(angle)*shooter_len;
-  shooter_y2 = shooter_y1 + sin(angle)*shooter_len;
-}
-
 double joystick_to_angle(double joystick_x){
   return acos(joystick_x);
 }
 
 double setup_asteroid_game(){
-  setup_bullets();    
+  setup_bullets();   
+  setup_asteroids(); 
+}
+
+//HANDLING ASTEROIDS------------------------>
+void setup_asteroids(){
+  for (int i = 0; i < ASTEROID_CAPACITY; i++) {
+    asteroids[i].angle = 0;
+    asteroids[i].color = TFT_WHITE;
+    asteroids[i].prev_x = 0;
+    asteroids[i].prev_y = 0;
+    asteroids[i].x = 0;
+    asteroids[i].y = 0;
+    asteroids[i].radius = 0;
+    asteroids[i].speed = 0;
+    asteroids[i].active = false;
+  }
+}
+
+/* "Shoot" aka create a new asteroid (if space)
+*/
+void shoot_asteroid(){
+  for(int i = 0; i < ASTEROID_CAPACITY; i++){
+    if(!asteroids[i].active){
+      asteroids[i].color = TFT_PINK;
+      asteroids[i].x = random(0, tft.width());
+      asteroids[i].y = tft.height();
+      asteroids[i].prev_x = asteroids[i].x;
+      asteroids[i].prev_y = asteroids[i].y;
+     
+      // Calculate proper angle (radians) toward shooter tip
+      double dx = shooter_x2 - asteroids[i].x;
+      double dy = shooter_y2 - asteroids[i].y;
+      asteroids[i].angle = atan2(dy, dx);
+
+      asteroids[i].radius = random(3, 10);
+      asteroids[i].speed = random(2, 4);
+      asteroids[i].active = true;
+      break;
+    }
+  }
+}
+
+
+/* Handle asteroids every loop iteration
+*/
+void handle_asteroids(){
+  for(int i = 0; i < ASTEROID_CAPACITY; i++){
+    if(asteroids[i].active){
+      asteroids[i].prev_x = asteroids[i].x;
+      asteroids[i].prev_y = asteroids[i].y;
+
+      // Move along angle using cos/sin (just like bullets)
+      asteroids[i].x += cos(asteroids[i].angle) * asteroids[i].speed;
+      asteroids[i].y += sin(asteroids[i].angle) * asteroids[i].speed;
+
+      //asteroids[i].x = new_x;
+      //asteroids[i].y = new_y;
+    }
+  }
+}
+
+void draw_asteroids(){
+  for(int i = 0; i < ASTEROID_CAPACITY; i++){
+    if(asteroids[i].active){
+      tft.drawCircle(asteroids[i].prev_x, asteroids[i].prev_y, asteroids[i].radius, ASTEROID_BG);
+      tft.drawCircle(asteroids[i].x, asteroids[i].y, asteroids[i].radius, asteroids[i].color);
+    }
+  }
 }
 
 //HANDLING BULLETS-------------------------->
 void setup_bullets(){
   for (int i = 0; i < BULLET_CAPACITY; i++) {
     bullets[i].angle = 0;
+    bullets[i].color = TFT_WHITE;
     bullets[i].prev_x = 0;
     bullets[i].prev_y = 0;
     bullets[i].x = 0;
     bullets[i].y = 0;
+    bullets[i].radius = BULLET_RADIUS;
     bullets[i].speed = 0;
     bullets[i].active = false;
-    bullets[i].color = TFT_WHITE;
   }
 }
 
@@ -86,6 +144,7 @@ void shoot_bullet(double joystick_x){
       bullets[i].prev_y = shooter_y2;
       bullets[i].x = shooter_x2;
       bullets[i].y = shooter_y2;
+      bullets[i].radius = BULLET_RADIUS;
       bullets[i].speed = BULLET_SPEED;
       bullets[i].active = true;
       break;
@@ -120,16 +179,6 @@ void handle_bullets(){
       
       //Bullet is NOT in-screen
       } else {
-        Serial.println("----");
-        Serial.println("NOT IN SCREEN");
-        Serial.println(tft.width());
-        Serial.println(tft.height());
-        Serial.println(bullets[i].x);
-        Serial.println(bullets[i].y);
-        Serial.println(new_x);
-        Serial.println(new_y);
-        Serial.println(i);
-        Serial.println("----");
         bullets[i].active = false;
         tft.drawCircle(bullets[i].prev_x, bullets[i].prev_y, BULLET_RADIUS, ASTEROID_BG);
       }
@@ -154,4 +203,17 @@ void draw_shooter(){
   }
   tft.drawCircle(shooter_x1, shooter_y1, shooter_len+5, TFT_RED);
   tft.drawLine(shooter_x1, shooter_y1, shooter_x2, shooter_y2, TFT_YELLOW);
+}
+
+
+/* Update shooter based on joystick input
+*/
+void update_shooter(double joystick_x){
+  double angle = joystick_to_angle(joystick_x);
+
+  shooter_x2_prev = shooter_x2;
+  shooter_y2_prev = shooter_y2;
+
+  shooter_x2 = shooter_x1 + cos(angle)*shooter_len;
+  shooter_y2 = shooter_y1 + sin(angle)*shooter_len;
 }

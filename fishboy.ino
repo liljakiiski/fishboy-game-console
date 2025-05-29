@@ -43,11 +43,14 @@ void loop(){
   //button is pressed
   if(!get_button_state()){
     shoot_bullet(get_joy_x());
+    shoot_asteroid();
     delay(100);
   }
 
   handle_bullets();
+  handle_asteroids();
   draw_bullets();
+  draw_asteroids();
 
   //Serial.println(get_bullets_count());
   //Serial.println(get_button_state());
