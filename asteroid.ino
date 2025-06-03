@@ -1,7 +1,8 @@
 //GENERAL------------------------------------>
 #define ASTEROID_BG TFT_BLACK
 
-bool asteroid_game_over = false;
+bool asteroid_game_over_ = false;
+bool asteroid_game_started_ = false;
 
 struct Moving_Object {
   double angle;
@@ -41,6 +42,18 @@ double joystick_to_angle(double joystick_x){
 double setup_asteroid_game(){
   setup_bullets();   
   setup_asteroids();
+}
+
+bool asteroid_game_started(){
+  return asteroid_game_started_;
+}
+
+void set_asteroid_game_started(bool b){
+  asteroid_game_started_ = b;
+}
+
+bool asteroid_game_over(){
+  return asteroid_game_over_;
 }
 
 /* Tells whether or not too circles collided
@@ -107,7 +120,7 @@ void handle_asteroids(){
       //Check collisions - shooter
       if(collided(asteroids[i].x, asteroids[i].y, asteroids[i].radius, shooter_x1, shooter_y1, shooter_len)){
         Serial.println("collided shooter");
-        asteroid_game_over = true;
+        asteroid_game_over_ = true;
         break;        
       }
 
