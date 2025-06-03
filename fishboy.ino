@@ -49,11 +49,17 @@ void loop(){
     case 1:
       //Game not started
       if(!asteroid_game_started()){
-        
+        tft.setRotation(2);
+        tft.setTextSize(1);
+        tft.setTextColor(TFT_WHITE);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawString("Press Button to Start", tft.width() / 2, tft.height() / 2, 4);
+        tft.setRotation(0);
 
-
+      //Game is starting
       if(!get_button_state()){
         set_asteroid_game_started(true);
+        shoot_asteroid();
 
         paint_base_background();
         tft.setRotation(0);
@@ -61,12 +67,15 @@ void loop(){
 
       //Game ongoing
       } else if (asteroid_game_started() && !asteroid_game_over()){
-        update_shooter(get_joy_x());
+        if(time_since_last_asteroid() > get_time_interval_asteroid()){
+          shoot_asteroid();
+          set_time_since_last_asteroid(millis());
+        }
+        update_shooter(joy_to_screen_x());
         draw_shooter();
 
         if(!get_button_state()){
-          shoot_bullet(get_joy_x());
-          shoot_asteroid();
+          shoot_bullet(joy_to_screen_x());
           delay(100);
         }
 
@@ -77,7 +86,25 @@ void loop(){
 
       //Game over
       } else if (asteroid_game_over()){
+        tft.setRotation(2);
+        tft.setTextSize(1);
+        tft.setTextColor(TFT_WHITE);
+        tft.drawString("Game Over", tft.width() / 2, tft.height() / 2 - 50, 4);
+        tft.drawString("Score:", tft.width()/2, tft.height()/2, 4);
+        char cstr[16];
+        itoa(get_asteroid_score(), cstr, 10);
+        tft.drawString(cstr, tft.width()/2, tft.height()/2 + 50, 4);
+        Serial.println(cstr);
+        Serial.println(get_asteroid_score());
+        tft.setRotation(0);
 
+        //Player wants to continue
+        if(!get_button_state()){
+          setup_asteroid_game();
+
+          paint_base_background();
+          tft.setRotation(0);
+        }
       }
 
       break;

@@ -1,6 +1,14 @@
 //GENERAL------------------------------------>
 #define ASTEROID_BG TFT_BLACK
 
+long START_TIME;
+long last_time;
+
+int SCORE;
+
+long last_time_interval_change;
+long time_interval;
+
 bool asteroid_game_over_ = false;
 bool asteroid_game_started_ = false;
 
@@ -42,6 +50,9 @@ double joystick_to_angle(double joystick_x){
 double setup_asteroid_game(){
   setup_bullets();   
   setup_asteroids();
+  set_asteroid_game_started(false);
+  set_asteroid_game_over(false);
+  SCORE = 0;
 }
 
 bool asteroid_game_started(){
@@ -49,11 +60,47 @@ bool asteroid_game_started(){
 }
 
 void set_asteroid_game_started(bool b){
+  //Game is starting
+  if(b){
+    START_TIME = millis();
+    last_time = START_TIME;
+    time_interval = 1000;
+    last_time_interval_change = START_TIME;
+  }
   asteroid_game_started_ = b;
 }
 
 bool asteroid_game_over(){
   return asteroid_game_over_;
+}
+
+void set_asteroid_game_over(bool b){
+  asteroid_game_over_ = b;  
+}
+
+/* Time since last asteroid shot
+*/
+long time_since_last_asteroid(){
+  return millis() - last_time;
+}
+
+long get_time_interval_asteroid(){
+  //Decrease time between asteroid throws every 8 seconds
+  if(millis() - last_time_interval_change > 8000){ 
+    last_time_interval_change = millis();
+    time_interval = 0.7 * time_interval;
+  }
+  return time_interval;
+}
+
+/* Set the time when asteroid was shot
+*/
+void set_time_since_last_asteroid(long the_time){
+  last_time = the_time;
+}
+
+int get_asteroid_score(){
+  return SCORE;
 }
 
 /* Tells whether or not too circles collided
@@ -86,7 +133,7 @@ void setup_asteroids(){
 void shoot_asteroid(){
   for(int i = 0; i < ASTEROID_CAPACITY; i++){
     if(!asteroids[i].active){
-      asteroids[i].color = TFT_PINK;
+      asteroids[i].color = TFT_GREEN;
       asteroids[i].x = random(0, tft.width());
       asteroids[i].y = tft.height();
       asteroids[i].prev_x = asteroids[i].x;
@@ -119,9 +166,21 @@ void handle_asteroids(){
 
       //Check collisions - shooter
       if(collided(asteroids[i].x, asteroids[i].y, asteroids[i].radius, shooter_x1, shooter_y1, shooter_len)){
-        Serial.println("collided shooter");
         asteroid_game_over_ = true;
-        break;        
+        //Paint message before delay
+        tft.setRotation(2);
+        tft.setTextSize(1);
+        tft.setTextColor(TFT_WHITE);
+        tft.drawString("Game Over", tft.width() / 2, tft.height() / 2 - 50, 4);
+        tft.drawString("Score:", tft.width()/2, tft.height()/2, 4);
+        char cstr[16];
+        itoa(get_asteroid_score(), cstr, 10);
+        tft.drawString(cstr, tft.width()/2, tft.height()/2 + 50, 4);
+        Serial.println(cstr);
+        Serial.println(get_asteroid_score());
+        tft.setRotation(0);
+        delay(1000);
+        break;
       }
 
       //Check collisions - bullets
@@ -131,8 +190,8 @@ void handle_asteroids(){
           tft.drawCircle(asteroids[i].prev_x, asteroids[i].prev_y, asteroids[i].radius, ASTEROID_BG);
           tft.drawCircle(bullets[x].prev_x, bullets[x].prev_y, BULLET_RADIUS, ASTEROID_BG);
           asteroids[i].active = false;
-          bullets[x].active = false;          
-          Serial.println("collided bullet??");
+          bullets[x].active = false;  
+          SCORE += 1;
           break;
         }
       }

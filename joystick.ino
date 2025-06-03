@@ -34,7 +34,7 @@ void print_joystick() {
 
 /* [SCREEN RELATIVE] direction of joystick x on -1 to 1 scale*/
 double joy_to_screen_x(){
-  return get_joy_x();
+  return -get_joy_x();
 }
 
 /* [SCREEN RELATIVE] direction of joystick y on -1 to 1 scale*/
