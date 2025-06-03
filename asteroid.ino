@@ -133,7 +133,7 @@ void setup_asteroids(){
 void shoot_asteroid(){
   for(int i = 0; i < ASTEROID_CAPACITY; i++){
     if(!asteroids[i].active){
-      asteroids[i].color = TFT_GREEN;
+      asteroids[i].color = TFT_PINK;
       asteroids[i].x = random(0, tft.width());
       asteroids[i].y = tft.height();
       asteroids[i].prev_x = asteroids[i].x;

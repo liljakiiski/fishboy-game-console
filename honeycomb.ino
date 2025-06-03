@@ -3,7 +3,7 @@
 TFT_HX8357 tft = TFT_HX8357();
 int SCREEN_WIDTH = 480;
 int SCREEN_HEIGHT = 320;
-#define BASE_BG 0x000000
+#define BASE_BG TFT_BLACK
 
 // Cursor
 struct Cursor {
@@ -52,7 +52,8 @@ void loop(){
         tft.setTextSize(1);
         tft.setTextColor(TFT_WHITE);
         tft.setTextDatum(MC_DATUM);
-        tft.drawString("Press Button to Start", tft.width() / 2, tft.height() / 2, 4);
+        tft.drawString("Honeycomb v1.0", tft.width() / 2, tft.height() / 2 - 25, 4);
+        tft.drawString("Press Button to Start", tft.width() / 2, tft.height() / 2 + 25, 4);
         tft.setRotation(0);
 
       //Game is starting
