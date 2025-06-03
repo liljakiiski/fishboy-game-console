@@ -1,5 +1,4 @@
 #include <TFT_HX8357.h>
-#include "Free_Fonts.h"
 
 TFT_HX8357 tft = TFT_HX8357();
 int SCREEN_WIDTH = 480;
